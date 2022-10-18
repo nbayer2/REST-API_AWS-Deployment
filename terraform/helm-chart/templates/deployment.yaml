@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ .Values.names }} #{{ include "helm-chart.fullname" . }}
+  labels:
+    app: {{ .Values.labels.app }} #{{- include "helm-chart.labels" . | nindent 4 }}
+  #release: "{{ .Values.release }}"
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: 
+      app: {{ .Values.labels.app }} #{{ include "helm-chart.fullname" . }} #{{- include "helm-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels: 
+        app: {{ .Values.labels.app }} #{{ include "helm-chart.fullname" . }} #{{- include "helm-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "helm-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.name }} #{{ include "helm-chart.fullname" . }} #{{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secret.name }}
+          # env:
+          #   - name: DB_USER
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Values.secret.name }}
+          #         key: DB_USER
+          #   - name: DB_PASSWORD
+          #     valueFrom:
+          #         secretKeyRef:
+          #           name: {{ .Values.secret.name }}
+          #           key: DB_PASSWORD
+          #   - name: DB_IP
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Values.secret.name }}
+          #         key: DB_IP
+          #   - name: DB_NAME
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Values.secret.name }}
+          #         key: DB_NAME
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}  #8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }} #/api/v1/book #/health/liveness
+              port: {{ .Values.service.targetPort }} #8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }} #/api/v1/book #/health/readiness
+              port: {{ .Values.service.targetPort }} #8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      

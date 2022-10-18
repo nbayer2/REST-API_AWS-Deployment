@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  annotations:
+    meta.helm.sh/release-name: monitoring
+    meta.helm.sh/release-namespace: monitoring
+  labels:
+    app: kube-prometheus-stack-prometheus
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: kube-prometheus-stack
+    app.kubernetes.io/version: 39.9.0
+    chart: kube-prometheus-stack-39.9.0
+    heritage: Helm
+    release: monitoring
+  name: prometheus
+  #namespace: monitoring
+spec:
+  enableAdminAPI: false
+  evaluationInterval: 30s
+  externalUrl: http://monitoring-kube-prometheus-prometheus.monitoring:9090
+  logFormat: logfmt
+  logLevel: info
+  paused: false
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector:
+    matchLabels:
+      release: monitoring
+  portName: http-web
+  probeNamespaceSelector: {}
+  probeSelector:
+    matchLabels:
+      release: monitoring
+  replicas: 1
+  retention: 10d
+  routePrefix: /
+  ruleNamespaceSelector: {}
+  ruleSelector:
+    matchLabels:
+      release: api-helm-chart
+  scrapeInterval: 30s
+  serviceAccountName: monitoring-kube-prometheus-prometheus
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector:
+    matchLabels:
+      release: api-helm-chart
+

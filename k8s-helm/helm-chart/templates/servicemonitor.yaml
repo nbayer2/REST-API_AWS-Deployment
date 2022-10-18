@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name:  {{ .Values.servicemonitor.name }} #{{ include "helm-chart.fullname" . }}
+  labels:
+    release: {{ .Values.release }} #api-helm-chart
+    app: {{ .Values.names }} #my-service-monitor
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.labels.app }} #{{ include "helm-chart.fullname" . }}
+  endpoints:
+    - interval: 15s
+      path: '/metrics'
+    - port: metrics
+      targetPort: {{ .Values.servicemonitor.targetPort }}
+  

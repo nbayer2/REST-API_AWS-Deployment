@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    serviceMonitorSelector: prometheus
+  name: prometheus
+  namespace: monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    targetPort: 9090
+    path: /metrics
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - test
+  selector:
+    matchLabels:
+      operated-prometheus: "true"
+      app.kubernetes.io/name: helm-chart

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: "kube-system"
+data: 
+  mapRoles: |
+      - rolearn: arn:aws:iam::317147208248:role/education-eks-YPk9NS1j2022081707335793270000000e
+        username: system:node:{{EC2PrivateDNSName}}
+        groups:
+      - system:bootstrappers
+      - system:nodes
+    
+
